@@ -1,0 +1,138 @@
+/*
+ * Copyright (c) 2017 by Farsight Security, Inc.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+syntax = "proto2";
+package sielink;
+
+enum MessageType {
+	DataMessage = 0;
+	TopologyMessage = 1;
+	AlertMessage = 2;
+	Heartbeat = 3;
+	Shutdown = 4;
+	Finished = 5;
+}
+
+message Message {
+	// protocolVersion lists all versions of the protocol
+	// supported by the message sender. Both peers must
+	// use the highest mutually supported version.
+	repeated uint32 protocolVersion = 1;
+
+	// The messageType informs the recipient which of the
+	// following fields are expected to be populated, if any.
+	required MessageType messageType = 2;
+
+	// The Payload is populated only for messages of type DataMessage.
+	optional Payload payload = 3;
+
+	// The Topology is populated only for messages of type TopologyMessage.
+	optional Topology topology = 4;
+
+	// The heartbeat value is a time interval in milliseconds,
+	// and tells the recipient to expect another heartbeat within
+	// that time interval.
+	//
+	// heartbeat can be set for any message type. Type HeartbeatMessage
+	// can be used if only the heartbeat is sent.
+	optional uint32 heartbeat = 5;
+
+	// Alert is populated only for messages of type AlertMessage.
+	optional Alert alert = 6;
+}
+
+enum PayloadType {
+	NmsgContainer = 1;
+	LogRecord = 2;
+	AccountingRecord = 3;
+}
+
+enum CompressionType {
+	None = 0;
+	Gzip = 1;
+	Deflate = 2;
+	LZ4 = 3;
+}
+
+// A Payload carries data for eventual publication or other processing.
+message Payload {
+	// Data is segmented into channels, some of which correspond
+	// to SIE channel numbers.
+	required uint32 channel = 1;
+
+	optional PayloadType payloadType = 2;
+	optional CompressionType compressionType = 3;
+
+	optional bytes data = 4;
+
+	// The loss markers `linkLoss` and `pathLoss` track
+	// loss of sielink Payloads from queue overflows. 
+	// The `linkLoss` counters are added to `pathLoss`
+	// and reset on each hop.
+	optional LossCounter linkLoss = 5;
+	optional LossCounter pathLoss = 6;
+
+	// sourceSite identifies the site at which the Payload
+	// was first submitted.
+	optional uint32 sourceSite = 7;
+
+	// sourceContributor contains the SIE source id of the
+	// uploading client, if known. The identifiers in the
+	// enclosed payloads (for NmsgContainer payloadType) are
+	// not modified in transit.
+	optional uint32 sourceContributor = 8;
+}
+
+message LossCounter {
+	optional uint64 bytes = 1;
+	optional uint64 payloads = 2;
+}
+
+// The exchange of Topology messages coordinates the routing of
+// Payloads among the submission hosts.
+message Topology {
+	// `path` contains the shortest known path for each known site,
+	// except for the site receiving the topology message.
+	repeated Path path = 1;
+	// `subscription` selects the data the sender wishes to receive.
+	repeated Subscription subscription = 2;
+}
+
+// A Path is an ordered list of sites with a metric reflecting the
+// cost of traversing the full path. The sites are listed in order
+// from the furthest (destination) to the closest (next hop).
+message Path {
+	required uint64 metric = 1;
+	repeated uint32 site = 2;
+}
+
+// Subscription messages supply a list of channels the sender wishes
+// to receive, and an optional source site. If the source site is populated
+// and nonzero, the message reqeusts only data submitted to that site on the
+// supplied channels. Otherwise, it requests data from any site.
+message Subscription {
+	optional uint32 sourceSite = 1;
+	repeated uint32 channel = 2;
+}
+
+enum AlertLevel {
+	Informational = 0;
+	Warning = 1;
+	RecoverableError = 2;
+	FatalError = 3;
+}
+
+// Alert messages are used to communicate error conditions and
+// other out-of-band information to the peer. With the exception
+// of FatalError alerts, they do not affect the operation of the
+// protocol.
+message Alert {
+	required AlertLevel level = 1;
+	optional string message = 2;
+	optional uint32 code = 3;
+}

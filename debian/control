@@ -1,0 +1,38 @@
+Source: sielink
+Section: devel
+Priority: optional
+Maintainer: Farsight Security, Inc. <software@farsightsecurity.com>
+Build-Depends: debhelper (>= 9), dh-golang, golang-go,
+ golang-goprotobuf-dev,
+ golang-golang-x-net-dev
+Standards-Version: 3.9.8
+Vcs-Git: https://github.com/farsightsec/sielink.git
+Vcs-Browser: https://github.com/farsightsec/sielink
+XS-Go-Import-Path: github.com/farsightsec/sielink
+
+Package: golang-github-farsightsec-sielink-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ golang-goprotobuf-dev,
+Description: sielink protocol library for the Go language
+ Package sielink implements the protocol used for communication between
+ SIE sensors and the submission servers and for inter-server communication.
+
+Package: golang-github-farsightsec-sielink-rawlink-dev
+Architecture: any
+Depends: golang-github-farsightsec-sielink-dev (= ${binary:Version}),
+ golang-goprotobuf-dev, golang-golang-x-net-dev,
+ ${shlibs:Depends}, ${misc:Depends}
+Description: Sielink core protocol library.
+ The rawlink library implements the sielink protocol on a pool of
+ connections with a shared configuration.
+
+Package: golang-github-farsightsec-sielink-client-dev
+Architecture: any
+Depends: golang-github-farsightsec-sielink-dev (= ${binary:Version}),
+ golang-github-farsightsec-sielink-rawlink-dev (= ${binary:Version}),
+ golang-golang-x-net-dev,
+ ${shlibs:Depends}, ${misc:Depends}
+Description: Sielink client library for the Go language
+ The client library supports both publication and subscription through
+ the sielink protocol.
