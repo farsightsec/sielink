@@ -2,10 +2,14 @@ Source: sielink
 Section: devel
 Priority: optional
 Maintainer: Farsight Security, Inc. <software@farsightsecurity.com>
-Build-Depends: debhelper (>= 9), dh-golang, golang-go,
+Build-Depends:
+ debhelper (>= 13),
+ debhelper-compat (= 13),
+ dh-golang,
+ golang-any,
  golang-goprotobuf-dev,
- golang-golang-x-net-dev
-Standards-Version: 3.9.8
+ golang-golang-x-net-dev,
+Standards-Version: 4.5.1
 Vcs-Git: https://github.com/farsightsec/sielink.git
 Vcs-Browser: https://github.com/farsightsec/sielink
 XS-Go-Import-Path: github.com/farsightsec/sielink

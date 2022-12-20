@@ -1,3 +1,9 @@
+sielink (0.1.1-2) debian-fsi; urgency=medium
+
+  * Update Debian golang build.
+
+ -- Farsight Security, Inc. <software@farsightsecurity.com>  Tue, 20 Dec 2022 20:35:13 +0000
+
 sielink (0.1.1-1) debian-farsightsec; urgency=medium
 
   * Initial public release.
