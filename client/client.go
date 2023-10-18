@@ -42,10 +42,6 @@ type Client interface {
 	// from the servers.
 	Subscribe(channels ...uint32)
 
-	Dial(uri string) (*websocket.Conn, error)
-
-	Handle(conn *websocket.Conn) error
-
 	Ready() chan struct{}
 }
 
@@ -70,17 +66,9 @@ func (c *basicClient) Subscribe(channels ...uint32) {
 }
 
 func (c *basicClient) DialAndHandle(serverurl string) error {
-	conn, err := c.Dial(serverurl)
-	if err != nil {
-		return err
-	}
-	return c.Handle(conn)
-}
-
-func (c *basicClient) Dial(serverurl string) (*websocket.Conn, error) {
 	conf, err := websocket.NewConfig(serverurl, c.URL)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	conf.TlsConfig = c.TLSConfig
 	if c.APIKey != "" {
@@ -89,14 +77,10 @@ func (c *basicClient) Dial(serverurl string) (*websocket.Conn, error) {
 
 	conn, err := dialConfig(conf)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	close(c.ready)
-	return conn, nil
-}
-
-func (c *basicClient) Handle(conn *websocket.Conn) error {
 	return c.HandleConnection(conn)
 }
 
