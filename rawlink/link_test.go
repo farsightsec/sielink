@@ -20,7 +20,7 @@ import (
 	"github.com/farsightsec/sielink"
 	"github.com/farsightsec/sielink/rawlink"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 
 	"net/http"
 )
@@ -31,7 +31,8 @@ var serverURL = "ws://" + server
 var clientURL = "ws://localhost:4321/client"
 
 func testDial(l *rawlink.Link, URL string) error {
-	conn, err := websocket.Dial(URL, "", clientURL)
+	rh := http.Header{}
+	conn, _, err := websocket.DefaultDialer.Dial(URL, rh)
 	if err != nil {
 		return err
 	}
@@ -54,7 +55,7 @@ func newTestLink(t *testing.T, name string, nconn int) *testLink {
 
 	tl.clientWg.Add(nconn)
 	tl.serverWg.Add(nconn)
-	http.Handle(path, websocket.Handler(
+	http.Handle(path, websocketHandler(
 		func(c *websocket.Conn) {
 			tl.clientWg.Done()
 			tl.serverLink.HandleConnection(c)
@@ -202,28 +203,49 @@ func TestLinkControlMessage(t *testing.T) {
 	}
 }
 
+type websocketHandler func(*websocket.Conn)
+
+func (h websocketHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+	if upgrader.CheckOrigin != nil && upgrader.CheckOrigin(req) == false {
+		return
+	}
+	rh := http.Header{}
+	conn, err := upgrader.Upgrade(w, req, rh)
+	if err != nil {
+		return
+	}
+	h(conn)
+}
+
 // Respond with alert message, verify client connection returns error.
 func TestLinkAlert(t *testing.T) {
 	alert := &sielink.Alert{
 		Level:   sielink.AlertLevel_FatalError.Enum(),
 		Message: proto.String("Test Alert"),
 	}
-	http.Handle("/TestLinkAlert", websocket.Handler(
-		func(c *websocket.Conn) {
-			m := &sielink.Message{
-				ProtocolVersion: sielink.SupportedVersions,
-				MessageType:     sielink.MessageType_AlertMessage.Enum(),
-				Alert:           alert,
-			}
-			b, err := proto.Marshal(m)
-			if err != nil {
-				return
-			}
-			websocket.Message.Send(c, b)
-			websocket.Message.Receive(c, m)
-		}))
-	cl := rawlink.NewLink()
+	http.Handle("/TestLinkAlert", websocketHandler(func(c *websocket.Conn) {
+		m := &sielink.Message{
+			ProtocolVersion: sielink.SupportedVersions,
+			MessageType:     sielink.MessageType_AlertMessage.Enum(),
+			Alert:           alert,
+		}
+		b, err := proto.Marshal(m)
+		if err != nil {
+			return
+		}
+		c.WriteMessage(1, b)
+		_, b, err = c.ReadMessage()
+		if err != nil {
+			return
+		}
+		proto.Unmarshal(b, m)
+	}))
 
+	cl := rawlink.NewLink()
 	err := waitFor(time.Second, func() {
 		t.Log(testDial(cl, serverURL+"/TestLinkAlert"))
 	})
@@ -234,7 +256,7 @@ func TestLinkAlert(t *testing.T) {
 
 // Respond with unsupported version. Verify client connection returns error.
 func TestLinkVersion(t *testing.T) {
-	http.Handle("/TestLinkVersion", websocket.Handler(
+	http.Handle("/TestLinkVersion", websocketHandler(
 		func(c *websocket.Conn) {
 			m := &sielink.Message{
 				ProtocolVersion: []uint32{0},
@@ -244,8 +266,12 @@ func TestLinkVersion(t *testing.T) {
 			if err != nil {
 				return
 			}
-			websocket.Message.Send(c, b)
-			websocket.Message.Receive(c, m)
+			c.WriteMessage(1, b)
+			_, b, err = c.ReadMessage()
+			if err != nil {
+				return
+			}
+			proto.Unmarshal(b, m)
 		}))
 
 	cl := rawlink.NewLink()

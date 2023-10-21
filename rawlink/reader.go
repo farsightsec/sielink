@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
+	"github.com/gorilla/websocket"
 )
 
 type recoverError struct{ rerr interface{} }
@@ -27,7 +27,6 @@ func (r recoverError) Error() string {
 // It returns when it enocunters a read error (which it returns), receives a
 // fatal Alert from its peer (which it returns), or receives a Finished message
 // from its peer, in which case it returns nil.
-//
 func (l *Link) runReader(c *websocket.Conn, rshut chan<- struct{}) (err error) {
 	defer func() {
 		// The l.ControlFunc call needs to be in this closure for

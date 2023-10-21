@@ -9,14 +9,15 @@
 package rawlink
 
 import (
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
+	"github.com/golang/protobuf/proto"
+	"github.com/gorilla/websocket"
 )
 
 func readMessage(c *websocket.Conn, m *sielink.Message) error {
 	var b []byte
-	if err := websocket.Message.Receive(c, &b); err != nil {
+	_, b, err := c.ReadMessage()
+	if err != nil {
 		return err
 	}
 	return proto.Unmarshal(b, m)
@@ -27,7 +28,7 @@ func writeMessage(c *websocket.Conn, m *sielink.Message) error {
 	if err != nil {
 		return err
 	}
-	return websocket.Message.Send(c, b)
+	return c.WriteMessage(1, b)
 }
 
 func writeAlert(c *websocket.Conn, err error) error {

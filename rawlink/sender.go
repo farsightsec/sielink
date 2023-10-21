@@ -11,9 +11,9 @@ package rawlink
 import (
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
+	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 func sendHeartbeat(c *websocket.Conn, d time.Duration) {

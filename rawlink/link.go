@@ -9,7 +9,6 @@
 // Package rawlink implements the base sielink Link protocol. It is not intended
 // to be used directly, but different usage profiles of the Link protocol may embed
 // a Link instance and implement their operations on top of it.
-//
 package rawlink
 
 import (
@@ -17,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 
 	"github.com/farsightsec/sielink"
 )
