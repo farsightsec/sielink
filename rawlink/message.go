@@ -28,7 +28,7 @@ func writeMessage(c *websocket.Conn, m *sielink.Message) error {
 	if err != nil {
 		return err
 	}
-	return c.WriteMessage(1, b)
+	return c.WriteMessage(sielink.SieMessageType, b)
 }
 
 func writeAlert(c *websocket.Conn, err error) error {

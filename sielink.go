@@ -17,6 +17,10 @@ import (
 // in this version of the package.
 var ProtocolVersion uint32 = 1
 
+const (
+	SieMessageType = 1
+)
+
 // SupportedVersions lists the protocol versions this version of
 // the package can interoperate with.
 var SupportedVersions = []uint32{ProtocolVersion}

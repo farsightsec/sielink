@@ -220,7 +220,7 @@ func TestLinkAlert(t *testing.T) {
 		if err != nil {
 			return
 		}
-		c.WriteMessage(1, b)
+		c.WriteMessage(sielink.SieMessageType, b)
 		_, b, err = c.ReadMessage()
 		if err != nil {
 			return
@@ -249,7 +249,7 @@ func TestLinkVersion(t *testing.T) {
 			if err != nil {
 				return
 			}
-			c.WriteMessage(1, b)
+			c.WriteMessage(sielink.SieMessageType, b)
 			_, b, err = c.ReadMessage()
 			if err != nil {
 				return
