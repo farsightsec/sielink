@@ -10,6 +10,7 @@ package rawlink_test
 
 import (
 	"errors"
+	"github.com/farsightsec/sielink/ws"
 	"log"
 	"sync"
 	"testing"
@@ -55,7 +56,7 @@ func newTestLink(t *testing.T, name string, nconn int) *testLink {
 
 	tl.clientWg.Add(nconn)
 	tl.serverWg.Add(nconn)
-	http.Handle(path, websocketHandler(
+	http.Handle(path, ws.NewHandler(
 		func(c *websocket.Conn) {
 			tl.clientWg.Done()
 			tl.serverLink.HandleConnection(c)
@@ -203,31 +204,13 @@ func TestLinkControlMessage(t *testing.T) {
 	}
 }
 
-type websocketHandler func(*websocket.Conn)
-
-func (h websocketHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-	if upgrader.CheckOrigin != nil && upgrader.CheckOrigin(req) == false {
-		return
-	}
-	rh := http.Header{}
-	conn, err := upgrader.Upgrade(w, req, rh)
-	if err != nil {
-		return
-	}
-	h(conn)
-}
-
 // Respond with alert message, verify client connection returns error.
 func TestLinkAlert(t *testing.T) {
 	alert := &sielink.Alert{
 		Level:   sielink.AlertLevel_FatalError.Enum(),
 		Message: proto.String("Test Alert"),
 	}
-	http.Handle("/TestLinkAlert", websocketHandler(func(c *websocket.Conn) {
+	http.Handle("/TestLinkAlert", ws.NewHandler(func(c *websocket.Conn) {
 		m := &sielink.Message{
 			ProtocolVersion: sielink.SupportedVersions,
 			MessageType:     sielink.MessageType_AlertMessage.Enum(),
@@ -256,7 +239,7 @@ func TestLinkAlert(t *testing.T) {
 
 // Respond with unsupported version. Verify client connection returns error.
 func TestLinkVersion(t *testing.T) {
-	http.Handle("/TestLinkVersion", websocketHandler(
+	http.Handle("/TestLinkVersion", ws.NewHandler(
 		func(c *websocket.Conn) {
 			m := &sielink.Message{
 				ProtocolVersion: []uint32{0},
