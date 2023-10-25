@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
+	"github.com/gorilla/websocket"
 )
 
 func (l *Link) runConnection(c *websocket.Conn) (err error) {

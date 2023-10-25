@@ -10,13 +10,17 @@ package sielink
 
 import (
 	"fmt"
-
-	"github.com/golang/protobuf/proto"
+	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 // ProtocolVersion is the version of the protocol implemented
 // in this version of the package.
 var ProtocolVersion uint32 = 1
+
+const (
+	SieMessageType = websocket.BinaryMessage
+)
 
 // SupportedVersions lists the protocol versions this version of
 // the package can interoperate with.

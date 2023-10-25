@@ -12,9 +12,10 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 
 	"github.com/farsightsec/sielink"
 	"github.com/farsightsec/sielink/rawlink"
@@ -66,16 +67,20 @@ func (c *basicClient) Subscribe(channels ...uint32) {
 }
 
 func (c *basicClient) DialAndHandle(serverurl string) error {
-	conf, err := websocket.NewConfig(serverurl, c.URL)
-	if err != nil {
-		return err
-	}
-	conf.TlsConfig = c.TLSConfig
+
+	rh := http.Header{}
 	if c.APIKey != "" {
-		conf.Header.Set("X-API-Key", c.APIKey)
+		rh.Set("X-API-Key", c.APIKey)
 	}
 
-	conn, err := dialConfig(conf)
+	dialer := websocket.Dialer{
+		TLSClientConfig: c.TLSConfig,
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	conn, _, err := dialer.Dial(serverurl, rh)
+
 	if err != nil {
 		return err
 	}
@@ -119,49 +124,5 @@ func getAddrs(name, service string, port uint16) (addrs []string, cn string, err
 
 	addrs = []string{fmt.Sprintf("%s:%d", name, port)}
 	err = nil
-	return
-}
-
-func dialConfig(conf *websocket.Config) (conn *websocket.Conn, err error) {
-	port := uint16(80)
-	useTLS := false
-	service := "http"
-
-	scheme := conf.Location.Scheme
-	switch scheme {
-	case "ws":
-	case "wss":
-		port = uint16(443)
-		useTLS = true
-		service = "https"
-	default:
-		return nil, fmt.Errorf("Invalid uri scheme %s", scheme)
-	}
-
-	addrs, serverName, err := getAddrs(conf.Location.Host, service, port)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, addr := range addrs {
-		var c net.Conn
-
-		if useTLS {
-			tlsc := new(tls.Config)
-			if conf.TlsConfig != nil {
-				*tlsc = *conf.TlsConfig
-			}
-			tlsc.ServerName = serverName
-			c, err = tls.Dial("tcp", addr, tlsc)
-		} else {
-			c, err = net.Dial("tcp", addr)
-		}
-		if err != nil {
-			continue
-		}
-
-		conn, err = websocket.NewClient(conf, c)
-		break
-	}
 	return
 }
