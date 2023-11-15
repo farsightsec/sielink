@@ -42,7 +42,7 @@ type Client interface {
 	// from the servers.
 	Subscribe(channels ...uint32)
 
-	Ready() chan struct{}
+	Ready() <-chan struct{}
 }
 
 // Config contains the configuration for a sieproto Client link.
@@ -84,7 +84,7 @@ func (c *basicClient) DialAndHandle(serverurl string) error {
 	return c.HandleConnection(conn)
 }
 
-func (c *basicClient) Ready() chan struct{} {
+func (c *basicClient) Ready() <-chan struct{} {
 	return c.ready
 }
 
