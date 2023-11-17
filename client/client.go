@@ -41,6 +41,8 @@ type Client interface {
 	// Subscribe requests data available on the supplied channels
 	// from the servers.
 	Subscribe(channels ...uint32)
+
+	Ready() <-chan struct{}
 }
 
 // Config contains the configuration for a sieproto Client link.
@@ -54,6 +56,7 @@ type Config struct {
 type basicClient struct {
 	*rawlink.Link
 	Config
+	ready chan struct{}
 }
 
 func (c *basicClient) Subscribe(channels ...uint32) {
@@ -76,7 +79,13 @@ func (c *basicClient) DialAndHandle(serverurl string) error {
 	if err != nil {
 		return err
 	}
+
+	close(c.ready)
 	return c.HandleConnection(conn)
+}
+
+func (c *basicClient) Ready() <-chan struct{} {
+	return c.ready
 }
 
 // NewClient creates a Link appropriate for use as a client for uploading
@@ -84,7 +93,7 @@ func (c *basicClient) DialAndHandle(serverurl string) error {
 func NewClient(conf *Config) Client {
 	rl := rawlink.NewLink()
 	rl.Heartbeat = conf.Heartbeat
-	return &basicClient{rl, *conf}
+	return &basicClient{rl, *conf, make(chan struct{})}
 }
 
 func getAddrs(name, service string, port uint16) (addrs []string, cn string, err error) {
