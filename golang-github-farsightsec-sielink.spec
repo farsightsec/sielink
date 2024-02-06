@@ -26,6 +26,7 @@ Source0:        %{gosource}
 %gopkg
 
 %prep
+%setup -n sielink
 %goprep
 
 %generate_buildrequires
