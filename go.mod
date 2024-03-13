@@ -7,4 +7,4 @@ require (
 	golang.org/x/net v0.17.0
 )
 
-require google.golang.org/protobuf v1.31.0 // indirect
+require google.golang.org/protobuf v1.33.0 // indirect
