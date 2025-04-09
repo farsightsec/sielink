@@ -12,7 +12,7 @@ Implements the protocol used for communication between SIE sensors and submissio
 %global golicenses      LICENSE
 %global godocs          README.md
 
-Name:           %{goname}
+Name:           sielink
 Release:        1%{?dist}
 Summary:        Sielink protocol library
 
