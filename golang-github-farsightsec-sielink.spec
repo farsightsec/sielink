@@ -13,7 +13,7 @@ Implements the protocol used for communication between SIE sensors and submissio
 %global godocs          README.md
 
 Name:           %{goname}
-Release:        %autorelease
+Release:        1%{?dist}
 Summary:        Sielink protocol library
 
 License:        MPLv2.0
@@ -21,6 +21,12 @@ URL:            %{gourl}
 Source0:        %{gosource}
 
 %description
+%{common_description}
+
+%package -n %{goname}-devel
+Summary:	%{summary}
+BuildArch:  noarch
+%description -n %{goname}-devel
 %{common_description}
 
 %prep
