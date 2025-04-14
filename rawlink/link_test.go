@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/farsightsec/sielink"
 	"github.com/farsightsec/sielink/rawlink"
