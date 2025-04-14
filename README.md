@@ -16,7 +16,7 @@ It contains two subdirectories:
 
 `sielink` relies on the following two go libraries:
 
- * google.golang.org/protobuf/proto
+ * github.com/golang/protobuf/proto
  * golang.org/x/net/websocket
 
 ## Client Usage
@@ -47,7 +47,7 @@ and tagged with a data type (sielink only supports NMSG container data as of
 this writing) and channel.
 
         import (
-                "google.golang.org/protobuf/proto"
+                "github.com/golang/protobuf/proto"
                 "github.com/farsightsec/sielink"
         )
 

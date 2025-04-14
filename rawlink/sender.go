@@ -11,7 +11,7 @@ package rawlink
 import (
 	"time"
 
-	"google.golang.org/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
 )

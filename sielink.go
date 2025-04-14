@@ -11,7 +11,7 @@ package sielink
 import (
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 // ProtocolVersion is the version of the protocol implemented
