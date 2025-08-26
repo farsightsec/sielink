@@ -9,9 +9,9 @@
 package rawlink
 
 import (
-	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/websocket"
 	"github.com/farsightsec/sielink"
+	"golang.org/x/net/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 func readMessage(c *websocket.Conn, m *sielink.Message) error {
