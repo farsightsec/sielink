@@ -22,7 +22,7 @@ var ProtocolVersion uint32 = 1
 // the package can interoperate with.
 var SupportedVersions = []uint32{ProtocolVersion}
 
-//go:generate protoc --go_out=. sielink.proto
+//go:generate protoc --go_out=. --go_opt=paths=source_relative --go_opt=Msielink.proto=github.com/farsightsec/sielink ./sielink.proto
 
 // A Link is the basic interface to a collection of sielink connections.
 type Link interface {
