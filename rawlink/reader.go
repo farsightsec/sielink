@@ -16,7 +16,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type recoverError struct{ rerr interface{} }
+type recoverError struct{ rerr any }
 
 func (r recoverError) Error() string {
 	return fmt.Sprintf("panic: %v", r.rerr)
