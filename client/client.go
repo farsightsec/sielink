@@ -147,9 +147,11 @@ func dialConfig(conf *websocket.Config) (conn *websocket.Conn, err error) {
 		var c net.Conn
 
 		if useTLS {
-			tlsc := new(tls.Config)
+			var tlsc *tls.Config
 			if conf.TlsConfig != nil {
-				*tlsc = *conf.TlsConfig
+				tlsc = conf.TlsConfig.Clone()
+			} else {
+				tlsc = new(tls.Config)
 			}
 			tlsc.ServerName = serverName
 			c, err = tls.Dial("tcp", addr, tlsc)
