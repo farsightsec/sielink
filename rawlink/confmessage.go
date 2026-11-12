@@ -9,8 +9,8 @@
 package rawlink
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/farsightsec/sielink"
+	"github.com/golang/protobuf/proto"
 )
 
 func (l *Link) setHeartbeat(hbtime uint32) {

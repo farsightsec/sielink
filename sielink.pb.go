@@ -6,9 +6,11 @@
 Package sielink is a generated protocol buffer package.
 
 It is generated from these files:
+
 	sielink.proto
 
 It has these top-level messages:
+
 	Message
 	Payload
 	LossCounter
