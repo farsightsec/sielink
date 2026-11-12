@@ -30,9 +30,12 @@ var serverURL = "ws://" + server
 
 var clientURL = "ws://localhost:4321/client"
 
-func testDial(l *rawlink.Link, URL string) error {
+func testDial(l *rawlink.Link, URL string, onDialErr ...func(error)) error {
 	conn, err := websocket.Dial(URL, "", clientURL)
 	if err != nil {
+		for _, errCallback := range onDialErr {
+			errCallback(err)
+		}
 		return err
 	}
 	return l.HandleConnection(conn)
@@ -63,10 +66,12 @@ func newTestLink(t *testing.T, name string, nconn int) *testLink {
 
 	for i := 0; i < nconn; i++ {
 		go func() {
-			if err := testDial(tl.clientLink, tl.serverURL); err != nil {
-				t.Log(err)
+			// Prevent a race where Dial() errors result in two calls to client/server.Done().
+			if err := testDial(tl.clientLink, tl.serverURL, func(err error) {
 				tl.clientWg.Done()
 				tl.serverWg.Done()
+			}); err != nil {
+				t.Log(err)
 			}
 		}()
 	}
