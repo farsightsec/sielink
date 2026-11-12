@@ -20,6 +20,9 @@ import (
 	"github.com/farsightsec/sielink/rawlink"
 )
 
+// Indirection so tests can mock SRV lookups without making actual DNS queries.
+var lookupSRV = net.LookupSRV
+
 // A Client Link allows the caller to subscribe to a number of channels
 // in addition to the base Link functionality.
 type Client interface {
@@ -105,7 +108,7 @@ func getAddrs(name, service string, port uint16) (addrs []string, cn string, err
 	}
 
 	cn = name
-	_, srvs, err := net.LookupSRV(service, "tcp", name)
+	_, srvs, err := lookupSRV(service, "tcp", name)
 	if err == nil {
 		for _, s := range srvs {
 			addrs = append(addrs, fmt.Sprintf("%s:%d", s.Target, s.Port))

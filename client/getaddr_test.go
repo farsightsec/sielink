@@ -9,6 +9,7 @@
 package client
 
 import (
+	"net"
 	"strings"
 	"testing"
 )
@@ -30,7 +31,15 @@ func TestHostPort(t *testing.T) {
 }
 
 func TestSRV(t *testing.T) {
-	t.Skip("skipping test due to internal pipeline tooling incompatibility");
+	// Mock the SRV lookup so this test can run inside offline builds.
+	orig := lookupSRV
+	t.Cleanup(func() { lookupSRV = orig })
+	lookupSRV = func(service, proto, name string) (string, []*net.SRV, error) {
+		return "", []*net.SRV{
+			{Target: "a.sie-network.net.", Port: 2022},
+			{Target: "b.sie-network.net.", Port: 2022},
+		}, nil
+	}
 
 	addrs, cn, err := getAddrs("submit.sie-network.net", "rsync", 22)
 	if err != nil {
@@ -48,7 +57,12 @@ func TestSRV(t *testing.T) {
 }
 
 func TestSRVNonexistent(t *testing.T) {
-	t.Skip("skipping test due to internal pipeline tooling incompatibility");
+	// Mock a missing SRV record so this test can run inside offline builds.
+	orig := lookupSRV
+	t.Cleanup(func() { lookupSRV = orig })
+	lookupSRV = func(service, proto, name string) (string, []*net.SRV, error) {
+		return "", nil, &net.DNSError{Err: "no such host", Name: name, IsNotFound: true}
+	}
 
 	addrs, cn, err := getAddrs("www.google.com", "https", 443)
 	if err != nil {
